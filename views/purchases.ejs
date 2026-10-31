@@ -1,0 +1,356 @@
+<%- include('partials/header') %>
+
+<div class="purchases-page fade-in">
+    <div class="header-actions">
+        <h1>Control de Compras</h1>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn secondary" onclick="location.reload()"><i class="fas fa-sync"></i> Actualizar</button>
+            <button class="btn btn-primary" onclick="showModal()"><i class="fas fa-truck-loading"></i> Registrar Compra</button>
+        </div>
+    </div>
+
+    <!-- Stats summary bar -->
+    <div class="purchases-stats-container">
+        <div class="purchase-stat-card">
+            <div class="icon" style="background: #ecfdf5; color: #10b981;"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="details">
+                <h3>Compras Hoy</h3>
+                <p><%= purchases.filter(p => new Date(p.FechaRegistro).toDateString() === new Date().toDateString()).length %></p>
+            </div>
+        </div>
+        <div class="purchase-stat-card">
+            <div class="icon" style="background: #fffbeb; color: #f59e0b;"><i class="fas fa-coins"></i></div>
+            <div class="details">
+                <h3>Inversión Hoy</h3>
+                <p>$<%= purchases.filter(p => new Date(p.FechaRegistro).toDateString() === new Date().toDateString()).reduce((acc, curr) => acc + curr.MontoTotal, 0).toFixed(2) %></p>
+            </div>
+        </div>
+        <div class="purchase-stat-card">
+            <div class="icon" style="background: #e0f2fe; color: #0369a1;"><i class="fas fa-truck"></i></div>
+            <div class="details">
+                <h3>Proveedores</h3>
+                <p><%= new Set(purchases.map(p => p.Id_Proveedor ? p.Id_Proveedor.RazonSocial : 'Desconocido')).size %></p>
+            </div>
+        </div>
+        <div class="purchase-stat-card">
+            <div class="icon" style="background: #fdf2f8; color: #9d174d;"><i class="fas fa-chart-pie"></i></div>
+            <div class="details">
+                <h3>Total del Mes</h3>
+                <p>$<%= purchases.filter(p => new Date(p.FechaRegistro).getMonth() === new Date().getMonth()).reduce((acc, curr) => acc + curr.MontoTotal, 0).toFixed(2) %></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Folio</th>
+                    <th>Proveedor</th>
+                    <th>Tipo Doc.</th>
+                    <th>Fecha Registro</th>
+                    <th>Total Inversión</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if(purchases && purchases.length > 0) { %>
+                    <% purchases.forEach(purchase => { %>
+                        <tr>
+                            <td><span class="badge warning">#<%= purchase.Folio %></span></td>
+                            <td>
+                                <strong><%= purchase.Id_Proveedor ? purchase.Id_Proveedor.RazonSocial : 'N/A' %></strong>
+                            </td>
+                            <td><%= purchase.Tipodedocumento || 'Ticket' %></td>
+                            <td>
+                                <div style="font-size: 0.9rem;"><%= new Date(purchase.FechaRegistro).toLocaleDateString() %></div>
+                                <small class="text-muted"><%= new Date(purchase.FechaRegistro).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></small>
+                            </td>
+                            <td><strong style="color: var(--primary-dark);">$<%= purchase.MontoTotal.toFixed(2) %></strong></td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn-icon" title="Ver Detalles"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Imprimir Recibo"><i class="fas fa-print"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 4rem;">
+                            <div style="color: var(--text-muted);">
+                                <i class="fas fa-boxes" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <p>No se han registrado compras de inventario</p>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal para Nueva Compra -->
+<div id="purchaseModal" class="modal">
+    <div class="modal-content" style="max-width: 850px;">
+        <div class="modal-header">
+            <h2>Registrar Entrada de Mercancía</h2>
+            <button class="close-btn" onclick="hideModal()">&times;</button>
+        </div>
+        <form action="/purchases" method="POST" id="purchaseForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Proveedor</label>
+                    <select name="Id_Proveedor" id="supplierSelect" required>
+                        <option value="">Seleccione proveedor...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Documento</label>
+                    <select name="Tipodedocumento">
+                        <option value="Factura">Factura de Compra</option>
+                        <option value="Nota">Nota de Remisión</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1.5rem; background: #f8fafc; border-radius: 16px; border: 1px dashed #cbd5e1;">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-main); font-weight: 800;"><i class="fas fa-plus-circle"></i> Agregar Productos a la Compra</h3>
+                <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr 1fr auto; align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Producto</label>
+                        <select id="productSelect">
+                            <option value="">Seleccione producto...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Costo Unit.</label>
+                        <input type="number" step="0.01" id="tempCost" placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>P. Venta Sug.</label>
+                        <input type="number" step="0.01" id="tempSalePrice" placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Cantidad</label>
+                        <input type="number" id="tempQty" value="1" min="1">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="addProductRow()" style="padding: 0.85rem;">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="table-container" style="margin-top: 1.5rem; box-shadow: none; border: 1px solid #e2e8f0;">
+                    <table>
+                        <thead>
+                            <tr style="font-size: 0.7rem;">
+                                <th>Producto</th>
+                                <th style="text-align: right;">Costo</th>
+                                <th style="text-align: center;">Cantidad</th>
+                                <th style="text-align: right;">Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartItems">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                <div style="width: 100%; max-width: 350px; background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; font-size: 1.6rem; font-weight: 900; color: #1e293b;">
+                        <span>TOTAL COMPRA:</span>
+                        <span id="displayTotal">$0.00</span>
+                        <input type="hidden" name="MontoTotal" id="inputTotal" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2.5rem;">Registrar Entrada</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .purchases-page {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .purchases-stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .purchase-stat-card {
+        background: var(--white);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(226, 232, 240, 0.5);
+    }
+
+    .purchase-stat-card .icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .purchase-stat-card .details h3 {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .purchase-stat-card .details p {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+</style>
+
+<script>
+    let cart = [];
+    const productsList = [];
+    const suppliersList = [];
+
+    async function loadData() {
+        try {
+            // Load Products
+            const resP = await fetch('/api/productos');
+            const products = await resP.json();
+            const pSelect = document.getElementById('productSelect');
+            products.forEach(p => {
+                productsList.push(p);
+                const opt = document.createElement('option');
+                opt.value = p._id;
+                opt.textContent = `${p.Nombre} (#${p.Numero})`;
+                pSelect.appendChild(opt);
+            });
+
+            // Load Suppliers
+            const resS = await fetch('/api/proveedores');
+            const suppliers = await resS.json();
+            const sSelect = document.getElementById('supplierSelect');
+            suppliers.forEach(s => {
+                suppliersList.push(s);
+                const opt = document.createElement('option');
+                opt.value = s._id;
+                opt.textContent = s.RazonSocial;
+                sSelect.appendChild(opt);
+            });
+        } catch (err) { console.error('Error loading data:', err); }
+    }
+
+    document.getElementById('productSelect').onchange = function() {
+        const p = productsList.find(x => x._id === this.value);
+        if(p) {
+            document.getElementById('tempCost').value = p.Precio_Compra || 0;
+            document.getElementById('tempSalePrice').value = p.Precio_venta || 0;
+        }
+    };
+
+    function addProductRow() {
+        const select = document.getElementById('productSelect');
+        const cost = parseFloat(document.getElementById('tempCost').value);
+        const salePrice = parseFloat(document.getElementById('tempSalePrice').value);
+        const qty = parseInt(document.getElementById('tempQty').value);
+        
+        if (!select.value || qty < 1) return;
+
+        const p = productsList.find(x => x._id === select.value);
+        const subtotal = cost * qty;
+
+        cart.push({ 
+            Id_Producto: p._id, 
+            nombre: p.Nombre, 
+            Precio_Compra: cost, 
+            Precio_venta: salePrice,
+            Stock: qty, 
+            MontoTotal: subtotal 
+        });
+        
+        updateCartTable();
+        // Reset row inputs
+        select.value = '';
+        document.getElementById('tempCost').value = '';
+        document.getElementById('tempSalePrice').value = '';
+        document.getElementById('tempQty').value = 1;
+    }
+
+    function updateCartTable() {
+        const body = document.getElementById('cartItems');
+        body.innerHTML = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            total += item.MontoTotal;
+            body.innerHTML += `
+                <tr>
+                    <td>
+                        <strong>${item.nombre}</strong>
+                        <input type="hidden" name="Detalles[${index}][Id_Producto]" value="${item.Id_Producto}">
+                        <input type="hidden" name="Detalles[${index}][Precio_Compra]" value="${item.Precio_Compra}">
+                        <input type="hidden" name="Detalles[${index}][Precio_venta]" value="${item.Precio_venta}">
+                        <input type="hidden" name="Detalles[${index}][Stock]" value="${item.Stock}">
+                        <input type="hidden" name="Detalles[${index}][MontoTotal]" value="${item.MontoTotal}">
+                    </td>
+                    <td style="text-align: right;">$${item.Precio_Compra.toFixed(2)}</td>
+                    <td style="text-align: center;">${item.Stock}</td>
+                    <td style="text-align: right; font-weight: 700;">$${item.MontoTotal.toFixed(2)}</td>
+                    <td style="text-align: center;">
+                        <button type="button" class="btn-icon danger" onclick="removeProduct(${index})"><i class="fas fa-times"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        if(cart.length === 0) {
+            body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:#94a3b8;">No hay productos en esta compra</td></tr>';
+        }
+
+        document.getElementById('displayTotal').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('inputTotal').value = total;
+    }
+
+    function removeProduct(index) {
+        cart.splice(index, 1);
+        updateCartTable();
+    }
+
+    function showModal() {
+        document.getElementById('purchaseModal').style.display = 'flex';
+        if (productsList.length === 0) loadData();
+    }
+    function hideModal() {
+        document.getElementById('purchaseModal').style.display = 'none';
+        cart = [];
+        updateCartTable();
+        document.getElementById('purchaseForm').reset();
+    }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('purchaseModal')) hideModal();
+    }
+</script>
+
+<%- include('partials/footer') %>

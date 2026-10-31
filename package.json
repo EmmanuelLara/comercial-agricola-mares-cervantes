@@ -1,0 +1,71 @@
+{
+  "name": "comercial-agricola-mares-cervantes",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión para Comercial Agrícola Mares Cervantes",
+  "main": "main.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev-api": "nodemon app.js",
+    "dev-frontend": "npm run dev --prefix frontend",
+    "electron-dev": "concurrently \"npm run dev-api\" \"npm run dev-frontend\" \"wait-on http://localhost:5173 && cross-env ELECTRON_DEV=true electron .\"",
+    "build-frontend": "npm run build --prefix frontend",
+    "dist": "npm run build-frontend && electron-builder",
+    "test": "node test_suite_completo.js",
+    "create-admin": "node crear_admin.js",
+    "prod": "cross-env NODE_ENV=production node app.js"
+  },
+  "keywords": [],
+  "author": "Emmanuel Lara",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "ejs": "^4.0.1",
+    "express": "^5.2.1",
+    "facturapi": "^5.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.6",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^34.1.1",
+    "electron-builder": "^25.1.8",
+    "nodemon": "^3.1.11",
+    "wait-on": "^9.0.4"
+  },
+  "build": {
+    "appId": "com.mares.cervantes.app",
+    "productName": "Comercial Agrícola Mares Cervantes",
+    "artifactName": "MaresApp.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app.js",
+      "main.js",
+      "preload.js",
+      "package.json",
+      ".env",
+      "config/**/*",
+      "controllers/**/*",
+      "middleware/**/*",
+      "models/**/*",
+      "routes/**/*",
+      "views/**/*",
+      "public/**/*",
+      "utils/**/*",
+      "frontend/dist/**/*",
+      "node_modules/**/*"
+    ],
+    "asar": false,
+    "win": {
+      "target": "portable",
+      "forceCodeSigning": false
+    }
+  }
+}

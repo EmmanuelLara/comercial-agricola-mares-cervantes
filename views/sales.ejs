@@ -1,0 +1,489 @@
+<%- include('partials/header') %>
+
+<div class="sales-page fade-in">
+    <div class="header-actions">
+        <h1>Control de Ventas</h1>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn secondary" onclick="location.reload()"><i class="fas fa-sync"></i> Actualizar</button>
+            <button class="btn btn-primary" onclick="showModal()"><i class="fas fa-cart-plus"></i> Nueva Venta</button>
+        </div>
+    </div>
+
+    <!-- Stats summary bar -->
+    <div class="sales-stats-container">
+        <div class="sales-stat-card">
+            <div class="icon" style="background: var(--primary-light); color: var(--primary-dark);"><i class="fas fa-shopping-basket"></i></div>
+            <div class="details">
+                <h3>Ventas Hoy</h3>
+                <p><%= sales.filter(s => new Date(s.FechaRegistro).toDateString() === new Date().toDateString()).length %></p>
+            </div>
+        </div>
+        <div class="sales-stat-card">
+            <div class="icon" style="background: #e0f2fe; color: #0369a1;"><i class="fas fa-dollar-sign"></i></div>
+            <div class="details">
+                <h3>Total Hoy</h3>
+                <p>$<%= sales.filter(s => new Date(s.FechaRegistro).toDateString() === new Date().toDateString()).reduce((acc, curr) => acc + curr.MontoTotal, 0).toFixed(2) %></p>
+            </div>
+        </div>
+        <div class="sales-stat-card">
+            <div class="icon" style="background: #fdf2f8; color: #9d174d;"><i class="fas fa-users"></i></div>
+            <div class="details">
+                <h3>Clientes Atenticos</h3>
+                <p><%= new Set(sales.map(s => s.Nombre_Cliente)).size %></p>
+            </div>
+        </div>
+        <div class="sales-stat-card">
+            <div class="icon" style="background: #fef9c3; color: #854d0e;"><i class="fas fa-chart-line"></i></div>
+            <div class="details">
+                <h3>Ticket Promedio</h3>
+                <p>$<%= sales.length > 0 ? (sales.reduce((acc, curr) => acc + curr.MontoTotal, 0) / sales.length).toFixed(2) : '0.00' %></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Folio</th>
+                    <th>Cliente</th>
+                    <th>Fecha / Hora</th>
+                    <th>Total</th>
+                    <th>Pago</th>
+                    <th>Cambio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if(sales && sales.length > 0) { %>
+                    <% sales.forEach(sale => { %>
+                        <tr>
+                            <td><span class="badge info">#<%= sale.Folio %></span></td>
+                            <td><strong><%= sale.Nombre_Cliente %></strong></td>
+                            <td>
+                                <div style="font-size: 0.9rem;"><%= new Date(sale.FechaRegistro).toLocaleDateString() %></div>
+                                <small class="text-muted"><%= new Date(sale.FechaRegistro).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></small>
+                            </td>
+                            <td><strong style="color: var(--primary-dark);">$<%= sale.MontoTotal.toFixed(2) %></strong></td>
+                            <td>$<%= sale.MontoPago.toFixed(2) %></td>
+                            <td><span class="text-muted">$<%= sale.MontoCambio.toFixed(2) %></span></td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn-icon" title="Ver Detalles"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Imprimir Ticket"><i class="fas fa-print"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 4rem;">
+                            <div style="color: var(--text-muted);">
+                                <i class="fas fa-receipt" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <p>No se han registrado ventas recientemente</p>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal para Nueva Venta -->
+<div id="saleModal" class="modal">
+    <div class="modal-content" style="max-width: 850px;">
+        <div class="modal-header">
+            <h2>Registrar Nueva Venta</h2>
+            <button class="close-btn" onclick="hideModal()">&times;</button>
+        </div>
+        <form action="/sales" method="POST" id="saleForm">
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select name="Id_Cliente" id="clientSelect" onchange="onClientChange()">
+                        <option value="">Cliente General (Público General)</option>
+                    </select>
+                    <input type="hidden" name="Nombre_Cliente" id="inputNombreCliente" value="Cliente General">
+                    <input type="hidden" name="Numero_Cliente" id="inputNumeroCliente" value="">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Documento</label>
+                    <select name="Tipodedocumento" id="docTypeSelect" onchange="toggleUsoCfdi()">
+                        <option value="Ticket">Ticket de Venta</option>
+                        <option value="Factura">CFDI / Factura</option>
+                    </select>
+                </div>
+                <div class="form-group" id="usoCfdiGroup" style="display: none;">
+                    <label>Uso del CFDI (SAT)</label>
+                    <select name="UsoCFDI" id="usoCfdiSelect">
+                        <option value="G03 - Gastos en general">G03 - Gastos en general</option>
+                        <option value="G01 - Adquisición de mercancías">G01 - Adquisición de mercancías</option>
+                        <option value="I01 - Construcciones">I01 - Construcciones</option>
+                        <option value="I03 - Equipo de transporte">I03 - Equipo de transporte</option>
+                        <option value="S01 - Sin efectos fiscales">S01 - Sin efectos fiscales</option>
+                        <option value="CP01 - Por definir">CP01 - Por definir</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1.5rem; background: #f8fafc; border-radius: 16px; border: 1px dashed #cbd5e1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1rem; margin: 0; color: var(--text-main);"><i class="fas fa-plus-circle"></i> Agregar Partidas a la Venta</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-sm secondary" id="btnModeProduct" onclick="setAddItemMode('product')" style="font-size: 0.85rem; padding: 4px 12px; background: var(--primary-light); color: var(--primary-dark); border: 1px solid var(--primary);">Del Inventario</button>
+                        <button type="button" class="btn btn-sm secondary" id="btnModeConcept" onclick="setAddItemMode('concept')" style="font-size: 0.85rem; padding: 4px 12px; border: 1px solid #cbd5e1;">Concepto / Servicio Libre</button>
+                    </div>
+                </div>
+
+                <!-- Input mode: Producto del inventario -->
+                <div id="productItemRow" class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Buscar Producto del Inventario</label>
+                        <select id="productSelect">
+                            <option value="">Seleccione un producto...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Precio Unit.</label>
+                        <input type="number" id="tempPrice" readonly placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Cantidad</label>
+                        <input type="number" id="tempQty" value="1" min="1">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="addProductRow()" style="padding: 0.85rem;" title="Agregar Producto">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Input mode: Concepto / Producto libre -->
+                <div id="conceptItemRow" class="form-grid" style="grid-template-columns: 2fr 1fr 1fr auto; align-items: flex-end; display: none;">
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Descripción / Concepto Libre</label>
+                        <input type="text" id="tempConcept" placeholder="Ej. Mano de obra, Flete, Servicio extra...">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Precio Unit.</label>
+                        <input type="number" step="0.01" id="tempCustomPrice" placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Cantidad</label>
+                        <input type="number" id="tempCustomQty" value="1" min="1">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="addConceptRow()" style="padding: 0.85rem;" title="Agregar Concepto">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="table-container" style="margin-top: 1.5rem; box-shadow: none; border: 1px solid #e2e8f0;">
+                    <table>
+                        <thead>
+                            <tr style="font-size: 0.7rem;">
+                                <th>Producto / Concepto</th>
+                                <th style="text-align: right;">Precio</th>
+                                <th style="text-align: center;">Cant.</th>
+                                <th style="text-align: right;">Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartItems">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                <div style="width: 100%; max-width: 350px; background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 1.4rem; font-weight: 800; color: var(--primary-dark);">
+                        <span>TOTAL:</span>
+                        <span id="displayTotal">$0.00</span>
+                        <input type="hidden" name="MontoTotal" id="inputTotal" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Paga con:</label>
+                        <input type="number" step="0.01" name="MontoPago" id="payAmount" oninput="calculateChange()" required placeholder="0.00" style="font-size: 1.2rem; font-weight: 700;">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--text-muted); font-size: 1.1rem;">
+                        <span>CAMBIO:</span>
+                        <span id="displayChange" style="color: var(--danger);">$0.00</span>
+                        <input type="hidden" name="MontoCambio" id="inputChange" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2.5rem;">Completar Venta</button>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+    .sales-stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .sales-stat-card {
+        background: var(--white);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        transition: transform 0.2s;
+    }
+
+    .sales-stat-card:hover { transform: translateY(-3px); }
+
+    .sales-stat-card .icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .sales-stat-card .details h3 {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .sales-stat-card .details p {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+</style>
+
+<script>
+    let cart = [];
+    const productsList = [];
+    const clientsList = [];
+    let addItemMode = 'product';
+
+    async function loadProducts() {
+        try {
+            const res = await fetch('/api/productos');
+            const products = await res.json();
+            const select = document.getElementById('productSelect');
+            select.innerHTML = '<option value="">Seleccione un producto...</option>';
+            productsList.length = 0;
+            products.forEach(p => {
+                productsList.push(p);
+                const opt = document.createElement('option');
+                opt.value = p._id;
+                opt.textContent = `${p.Nombre} - $${p.Precio_venta.toFixed(2)}`;
+                select.appendChild(opt);
+            });
+        } catch (err) { console.error('Error loading products:', err); }
+    }
+
+    async function loadClients() {
+        try {
+            const res = await fetch('/api/clientes');
+            const clients = await res.json();
+            const select = document.getElementById('clientSelect');
+            select.innerHTML = '<option value="">Cliente General (Público General)</option>';
+            clientsList.length = 0;
+            clients.forEach(c => {
+                clientsList.push(c);
+                const opt = document.createElement('option');
+                opt.value = c._id;
+                opt.textContent = `${c.NombreCompleto} ${c.RFC ? '(' + c.RFC + ')' : ''}`;
+                select.appendChild(opt);
+            });
+        } catch (err) { console.error('Error loading clients:', err); }
+    }
+
+    function onClientChange() {
+        const select = document.getElementById('clientSelect');
+        const c = clientsList.find(x => x._id === select.value);
+        if (c) {
+            document.getElementById('inputNombreCliente').value = c.NombreCompleto;
+            document.getElementById('inputNumeroCliente').value = c.Numero_Cliente || '';
+        } else {
+            document.getElementById('inputNombreCliente').value = 'Cliente General';
+            document.getElementById('inputNumeroCliente').value = '';
+        }
+    }
+
+    function toggleUsoCfdi() {
+        const docType = document.getElementById('docTypeSelect').value;
+        const group = document.getElementById('usoCfdiGroup');
+        group.style.display = (docType === 'Factura') ? 'block' : 'none';
+    }
+
+    function setAddItemMode(mode) {
+        addItemMode = mode;
+        const btnProd = document.getElementById('btnModeProduct');
+        const btnConc = document.getElementById('btnModeConcept');
+        const rowProd = document.getElementById('productItemRow');
+        const rowConc = document.getElementById('conceptItemRow');
+
+        if (mode === 'product') {
+            rowProd.style.display = 'grid';
+            rowConc.style.display = 'none';
+            btnProd.style.background = 'var(--primary-light)';
+            btnProd.style.color = 'var(--primary-dark)';
+            btnProd.style.border = '1px solid var(--primary)';
+            btnConc.style.background = 'transparent';
+            btnConc.style.color = 'var(--text-muted)';
+            btnConc.style.border = '1px solid #cbd5e1';
+        } else {
+            rowProd.style.display = 'none';
+            rowConc.style.display = 'grid';
+            btnConc.style.background = 'var(--primary-light)';
+            btnConc.style.color = 'var(--primary-dark)';
+            btnConc.style.border = '1px solid var(--primary)';
+            btnProd.style.background = 'transparent';
+            btnProd.style.color = 'var(--text-muted)';
+            btnProd.style.border = '1px solid #cbd5e1';
+        }
+    }
+
+    document.getElementById('productSelect').onchange = function() {
+        const p = productsList.find(x => x._id === this.value);
+        document.getElementById('tempPrice').value = p ? p.Precio_venta : 0;
+    };
+
+    function addProductRow() {
+        const select = document.getElementById('productSelect');
+        const qty = parseInt(document.getElementById('tempQty').value);
+        if (!select.value || qty < 1) return;
+
+        const p = productsList.find(x => x._id === select.value);
+        const subtotal = p.Precio_venta * qty;
+
+        const existing = cart.find(x => x.id === p._id);
+        if (existing) {
+            existing.qty += qty;
+            existing.subtotal = existing.price * existing.qty;
+        } else {
+            cart.push({ id: p._id, nombre: p.Nombre, price: p.Precio_venta, qty, subtotal });
+        }
+        
+        updateCartTable();
+        select.value = '';
+        document.getElementById('tempPrice').value = 0;
+        document.getElementById('tempQty').value = 1;
+    }
+
+    function addConceptRow() {
+        const concept = document.getElementById('tempConcept').value.trim();
+        const price = parseFloat(document.getElementById('tempCustomPrice').value);
+        const qty = parseInt(document.getElementById('tempCustomQty').value);
+
+        if (!concept || isNaN(price) || price < 0 || isNaN(qty) || qty < 1) {
+            alert('Por favor ingrese un concepto válido, precio y cantidad mayor a 0.');
+            return;
+        }
+
+        const subtotal = price * qty;
+        cart.push({ concepto, price, qty, subtotal });
+
+        updateCartTable();
+        document.getElementById('tempConcept').value = '';
+        document.getElementById('tempCustomPrice').value = '';
+        document.getElementById('tempCustomQty').value = 1;
+    }
+
+    function updateCartTable() {
+        const body = document.getElementById('cartItems');
+        body.innerHTML = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            total += item.subtotal;
+            const displayName = item.id ? `<strong>${item.nombre}</strong>` : `<strong>${item.concepto}</strong> <span class="badge info" style="font-size:0.65rem">Concepto Libre</span>`;
+            
+            let hiddenInputs = '';
+            if (item.id) {
+                hiddenInputs += `<input type="hidden" name="Detalles[${index}][Id_Producto]" value="${item.id}">`;
+            }
+            if (item.concepto) {
+                hiddenInputs += `<input type="hidden" name="Detalles[${index}][Concepto]" value="${item.concepto}">`;
+            }
+            hiddenInputs += `
+                <input type="hidden" name="Detalles[${index}][Precio_Venta]" value="${item.price}">
+                <input type="hidden" name="Detalles[${index}][Cantidad]" value="${item.qty}">
+                <input type="hidden" name="Detalles[${index}][MontoTotal]" value="${item.subtotal}">
+            `;
+
+            body.innerHTML += `
+                <tr>
+                    <td>
+                        ${displayName}
+                        ${hiddenInputs}
+                    </td>
+                    <td style="text-align: right;">$${item.price.toFixed(2)}</td>
+                    <td style="text-align: center;">${item.qty}</td>
+                    <td style="text-align: right; font-weight: 700;">$${item.subtotal.toFixed(2)}</td>
+                    <td style="text-align: center;">
+                        <button type="button" class="btn-icon danger" onclick="removeProduct(${index})"><i class="fas fa-times"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        if(cart.length === 0) {
+            body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:#94a3b8;">El carrito está vacío</td></tr>';
+        }
+
+        document.getElementById('displayTotal').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('inputTotal').value = total;
+        calculateChange();
+    }
+
+    function removeProduct(index) {
+        cart.splice(index, 1);
+        updateCartTable();
+    }
+
+    function calculateChange() {
+        const total = parseFloat(document.getElementById('inputTotal').value);
+        const paid = parseFloat(document.getElementById('payAmount').value) || 0;
+        const change = paid - total;
+        document.getElementById('displayChange').textContent = `$${(change > 0 ? change : 0).toFixed(2)}`;
+        document.getElementById('inputChange').value = change > 0 ? change.toFixed(2) : 0;
+        
+        if(paid < total && paid > 0) {
+            document.getElementById('displayChange').style.color = 'var(--danger)';
+            document.getElementById('displayChange').textContent = 'Faltante: $' + (total - paid).toFixed(2);
+        } else {
+            document.getElementById('displayChange').style.color = 'var(--primary-dark)';
+        }
+    }
+
+    function showModal() {
+        document.getElementById('saleModal').style.display = 'flex';
+        if (productsList.length === 0) loadProducts();
+        if (clientsList.length === 0) loadClients();
+        toggleUsoCfdi();
+    }
+    function hideModal() {
+        document.getElementById('saleModal').style.display = 'none';
+        cart = [];
+        updateCartTable();
+        document.getElementById('saleForm').reset();
+        setAddItemMode('product');
+    }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('saleModal')) hideModal();
+    }
+</script>
+
+<%- include('partials/footer') %>

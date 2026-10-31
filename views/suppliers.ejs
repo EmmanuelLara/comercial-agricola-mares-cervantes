@@ -1,0 +1,156 @@
+<%- include('partials/header') %>
+
+<div class="suppliers fade-in">
+    <div class="header-actions">
+        <h1>Gestión de Proveedores</h1>
+        <button class="btn btn-primary" onclick="showModal()"><i class="fas fa-truck"></i> Nuevo Proveedor</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Razón Social / RFC</th>
+                    <th>Contacto</th>
+                    <th>Ubicación</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if(proveedores && proveedores.length > 0) { %>
+                    <% proveedores.forEach(p => { %>
+                        <tr>
+                            <td><span class="badge secondary">#<%= p.Numero_Proveedor || 'N/A' %></span></td>
+                            <td>
+                                <strong><%= p.RazonSocial %></strong><br>
+                                <small class="text-muted"><%= p.RFC || 'Sin RFC' %></small>
+                            </td>
+                            <td>
+                                <div><i class="fas fa-user-circle text-muted"></i> <%= p.Contacto || 'N/A' %></div>
+                                <div class="text-muted" style="font-size: 0.8rem;"><i class="fas fa-envelope"></i> <%= p.Correo || 'N/A' %></div>
+                            </td>
+                            <td>
+                                <div style="font-size: 0.85rem;">
+                                    <%= p.Ciudad ? p.Ciudad : '' %> <%= p.Estado_Prov ? '(' + p.Estado_Prov + ')' : '' %>
+                                </div>
+                                <small class="text-muted"><%= p.Direccion || '' %></small>
+                            </td>
+                            <td>
+                                <span class="badge <%= p.Estado === 'Activo' ? 'success' : 'secondary' %>">
+                                    <%= p.Estado || 'Activo' %>
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 4rem;">
+                            <div style="color: var(--text-muted);">
+                                <i class="fas fa-shipping-fast" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <p>No hay proveedores registrados</p>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal para Nuevo Proveedor -->
+<div id="supplierModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Añadir Nuevo Proveedor</h2>
+            <button class="close-btn" onclick="hideModal()">&times;</button>
+        </div>
+        <form action="/suppliers" method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Número Proveedor</label>
+                    <input type="text" name="Numero_Proveedor" placeholder="Ex: PROV-001">
+                </div>
+                <div class="form-group">
+                    <label>Razón Social</label>
+                    <input type="text" name="RazonSocial" required placeholder="Nombre de la empresa">
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>RFC</label>
+                    <input type="text" name="RFC" placeholder="RFC de la empresa">
+                </div>
+                <div class="form-group">
+                    <label>Contacto (Persona)</label>
+                    <input type="text" name="Contacto" placeholder="Nombre de contacto">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="Correo" placeholder="correo@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" name="Telefono" placeholder="123 456 7890">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Dirección</label>
+                <input type="text" name="Direccion" placeholder="Calle, número, colonia">
+            </div>
+
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" name="Ciudad" placeholder="Ciudad">
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <input type="text" name="Estado_Prov" placeholder="Estado">
+                </div>
+                <div class="form-group">
+                    <label>C.P.</label>
+                    <input type="text" name="CodigoPostal" placeholder="Código Postal">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Proveedor</button>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+    .suppliers {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+</style>
+
+<script>
+    function showModal() {
+        document.getElementById('supplierModal').style.display = 'flex';
+    }
+    function hideModal() {
+        document.getElementById('supplierModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('supplierModal')) hideModal();
+    }
+</script>
+
+<%- include('partials/footer') %>

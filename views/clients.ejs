@@ -1,0 +1,242 @@
+<%- include('partials/header') %>
+
+<div class="clients fade-in">
+    <div class="header-actions">
+        <div>
+            <h1>Gestión de Clientes</h1>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Control de clientes y directorio de contacto</p>
+        </div>
+        <button class="btn btn-primary" onclick="showModal()"><i class="fas fa-user-plus"></i> Nuevo Cliente</button>
+    </div>
+
+    <!-- Filtro de búsqueda -->
+    <div style="margin-bottom: 1.5rem; max-width: 400px;">
+        <div class="search-bar" style="width: 100%;">
+            <i class="fas fa-search"></i>
+            <input 
+                type="text" 
+                id="searchInput"
+                placeholder="Buscar por nombre, RFC o número..." 
+                oninput="filtrarClientes()"
+            />
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="clientsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>RFC</th>
+                    <th>Nombre del Cliente</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="clientsBody">
+                <% if(clients && clients.length > 0) { %>
+                    <% clients.forEach(client => { %>
+                        <tr 
+                            data-nombre="<%= (client.NombreCompleto || '').toLowerCase() %>"
+                            data-rfc="<%= (client.RFC || '').toLowerCase() %>"
+                            data-num="<%= (client.Numero_Cliente || '').toLowerCase() %>"
+                        >
+                            <td><span class="badge secondary" style="font-weight:700">#<%= client.Numero_Cliente %></span></td>
+                            <td>
+                                <% if(client.RFC) { %>
+                                    <code style="background:#f1f5f9;padding:3px 6px;border-radius:4px;font-weight:700;color:var(--primary-dark)"><%= client.RFC %></code>
+                                <% } else { %>
+                                    <span style="color:#94a3b8;font-size:0.8rem">Sin RFC</span>
+                                <% } %>
+                            </td>
+                            <td><strong><%= client.NombreCompleto %></strong></td>
+                            <td>
+                                <span class="badge <%= client.Estado === 'Activo' ? 'success' : 'danger' %>">
+                                    <%= client.Estado || 'Activo' %>
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn-icon" style="color:#0369a1" title="Ver detalles" onclick='verCliente(<%- JSON.stringify(client) %>)'>
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 4rem;">
+                            <div style="color: var(--text-muted);">
+                                <i class="fas fa-user-tag" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <p>No hay clientes registrados</p>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+        <div id="noResults" style="display:none; text-align:center; padding:3rem; color:var(--text-muted);">
+            <i class="fas fa-search" style="font-size:2rem; opacity:0.3; margin-bottom:1rem; display:block;"></i>
+            <p>No se encontraron clientes con ese criterio</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal Nuevo Cliente ── -->
+<div id="clientModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Añadir Nuevo Cliente</h2>
+            <button class="close-btn" onclick="hideModal()">&times;</button>
+        </div>
+        <form action="/clients" method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" name="NombreCompleto" required placeholder="Nombre del cliente">
+                </div>
+                <div class="form-group">
+                    <label>RFC</label>
+                    <input type="text" name="RFC" placeholder="Ej. PELJ900101XYZ" style="text-transform:uppercase">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="Correo" placeholder="cliente@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" name="Telefono" placeholder="449 123 4567">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── Modal Ver Detalles ── -->
+<div id="viewModal" class="modal">
+    <div class="modal-content" style="max-width:560px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-eye" style="margin-right:8px;"></i> Detalle del Cliente</h2>
+            <button class="close-btn" onclick="hideViewModal()">&times;</button>
+        </div>
+        <div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:10px;padding:1rem;margin:0.5rem 0 0.25rem;display:flex;align-items:center;gap:12px;">
+            <div style="background:#0ea5e9;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-user" style="color:#fff;font-size:1.2rem;"></i>
+            </div>
+            <div>
+                <div id="viewNombre" style="font-weight:700;font-size:1.05rem;color:#0c4a6e;"></div>
+                <div id="viewNumEstado" style="font-size:0.82rem;color:#0369a1;margin-top:2px;"></div>
+            </div>
+        </div>
+        <div style="padding:0 0.25rem;max-height:60vh;overflow-y:auto;" id="viewBody"></div>
+        <div class="modal-actions" style="margin-top:1rem;">
+            <button type="button" class="btn secondary" onclick="hideViewModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .clients { display: flex; flex-direction: column; gap: 2rem; }
+    .info-section-title {
+        display:flex; align-items:center; gap:8px;
+        margin-top:1.25rem; margin-bottom:0.5rem;
+        padding-bottom:6px; border-bottom:2px solid #e2e8f0;
+        font-weight:700; font-size:0.82rem; color:#475569;
+        text-transform:uppercase; letter-spacing:0.06em;
+    }
+    .info-row { display:flex; align-items:flex-start; gap:10px; padding:7px 0; border-bottom:1px solid #f1f5f9; }
+    .info-icon { min-width:22px; color:#94a3b8; margin-top:2px; }
+    .info-label { font-size:0.7rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+    .info-val   { font-size:0.91rem; color:#1e293b; font-weight:500; margin-top:2px; }
+    .info-empty { color:#cbd5e1; font-style:italic; }
+</style>
+
+<script>
+    // ── Filtro ──────────────────────────────────────
+    function filtrarClientes() {
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#clientsBody tr[data-nombre]');
+        let visibles = 0;
+        rows.forEach(row => {
+            const match = !q
+                || row.dataset.nombre.includes(q)
+                || row.dataset.rfc.includes(q)
+                || row.dataset.num.includes(q);
+            row.style.display = match ? '' : 'none';
+            if (match) visibles++;
+        });
+        document.getElementById('noResults').style.display = (q && visibles === 0) ? 'block' : 'none';
+    }
+
+    // ── Modal Nuevo Cliente ─────────────────────────
+    function showModal() { document.getElementById('clientModal').style.display = 'flex'; }
+    function hideModal() { document.getElementById('clientModal').style.display = 'none'; }
+
+    // ── Modal Ver Detalles ──────────────────────────
+    function verCliente(c) {
+        document.getElementById('viewNombre').textContent = c.NombreCompleto || '';
+        document.getElementById('viewNumEstado').innerHTML =
+            '#' + (c.Numero_Cliente || '') + ' &nbsp;·&nbsp; ' +
+            '<span class="badge ' + (c.Estado === 'Activo' ? 'success' : 'danger') +
+            '" style="font-size:0.72rem">' + (c.Estado || 'Activo') + '</span>';
+
+        const fila = (icon, label, val) =>
+            '<div class="info-row">' +
+            '<span class="info-icon">' + icon + '</span>' +
+            '<div><div class="info-label">' + label + '</div>' +
+            '<div class="info-val">' + (val || '<span class="info-empty">Sin datos</span>') + '</div>' +
+            '</div></div>';
+
+        const titulo = (icon, label) =>
+            '<div class="info-section-title">' + icon + ' ' + label + '</div>';
+
+        let html = '';
+
+        html += titulo('🪪', 'Datos Fiscales');
+        html += fila('📋', 'RFC', c.RFC ? '<code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-weight:700">' + c.RFC + '</code>' : '');
+        html += fila('🏢', 'Razón Social', c.RazonSocial);
+        html += fila('📄', 'Régimen Fiscal', c.RegimenFiscal);
+        const deuda = (c.Total_Deuda || 0) > 0
+            ? '<span style="color:#dc2626;font-weight:700">$' + Number(c.Total_Deuda).toLocaleString('es-MX',{minimumFractionDigits:2}) + '</span>'
+            : '<span style="color:#16a34a;font-weight:700">$0.00</span>';
+        html += fila('💰', 'Deuda Total', deuda);
+
+        html += titulo('📞', 'Contacto');
+        html += fila('📞', 'Teléfono', c.Telefono);
+        html += fila('✉️', 'Correo', c.Correo);
+
+        html += titulo('📍', 'Ubicación');
+        html += fila('🏘️', 'Localidad', c.Localidad);
+        html += fila('🏙️', 'Municipio', c.Municipio);
+        html += fila('🗺️', 'Estado', c.EstadoGeografico);
+
+        html += titulo('🏠', 'Dirección');
+        html += fila('🛣️', 'Calle', c.Calle);
+        html += fila('🔢', 'Núm. Ext.', c.Num_Ext);
+        html += fila('🔢', 'Núm. Int.', c.Num_Int);
+        html += fila('🏠', 'Colonia', c.Colonia);
+        html += fila('📮', 'Código Postal', c.CodigoPostal);
+        if (c.Direccion) html += fila('📍', 'Dirección completa', c.Direccion);
+
+        document.getElementById('viewBody').innerHTML = html;
+        document.getElementById('viewModal').style.display = 'flex';
+    }
+
+    function hideViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+
+    window.onclick = function(e) {
+        if (e.target === document.getElementById('clientModal')) hideModal();
+        if (e.target === document.getElementById('viewModal')) hideViewModal();
+    }
+</script>
+
+<%- include('partials/footer') %>

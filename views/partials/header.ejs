@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="logo">
+          <i class="fas fa-warehouse"></i>
+          <span>Comercial Agrícola Mares Cervantes</span>
+        </div>
+        <nav>
+          <ul>
+            <li>
+              <a href="/" class="<%= title.includes('Dashboard') ? 'active' : '' %>"><i class="fas fa-th-large"></i> Dashboard</a>
+            </li>
+            <li>
+              <a href="/inventory" class="<%= title.includes('Inventario') ? 'active' : '' %>"><i class="fas fa-boxes"></i> Inventario</a>
+            </li>
+            <li>
+              <a href="/sales" class="<%= title.includes('Ventas') ? 'active' : '' %>"><i class="fas fa-cash-register"></i> Ventas</a>
+            </li>
+            <li>
+              <a href="/purchases" class="<%= title.includes('Compras') ? 'active' : '' %>"><i class="fas fa-truck-loading"></i> Compras</a>
+            </li>
+            <li>
+              <a href="/clients" class="<%= title.includes('Clientes') ? 'active' : '' %>"><i class="fas fa-user-friends"></i> Clientes</a>
+            </li>
+            <li>
+              <a href="/suppliers" class="<%= title.includes('Proveedores') ? 'active' : '' %>"><i class="fas fa-shipping-fast"></i> Proveedores</a>
+            </li>
+            <% if (user.rol === 'Jefe' || user.rol === 'Administrador') { %>
+            <div style="margin: 1.5rem 0 0.5rem 1.2rem; font-size: 0.65rem; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Administración</div>
+            <li>
+              <a href="/users" class="<%= title.includes('Usuarios') ? 'active' : '' %>"><i class="fas fa-user-shield"></i> Usuarios</a>
+            </li>
+            <% } %>
+          </ul>
+        </nav>
+        
+        <div style="margin-top: auto; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981;"></div>
+                <small style="color: #94a3b8; font-weight: 600;">Sistema en línea</small>
+            </div>
+            <small style="color: #64748b; font-size: 0.7rem;">Versión 2.0.4 - 2024</small>
+        </div>
+      </aside>
+      
+      <main class="content">
+        <header class="top-bar">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Buscar productos, ventas o clientes..." />
+          </div>
+          <div class="user-info">
+            <div class="user-details">
+                <span class="user-name"><%= user.nombre %></span>
+                <span class="user-role"><%= user.rol %></span>
+            </div>
+            <div class="user-dropdown">
+                <img
+                    src="https://ui-avatars.com/api/?name=<%= user.nombre %>&background=10b981&color=fff&bold=true&rounded=true"
+                    alt="<%= user.nombre %>"
+                    class="user-avatar"
+                />
+                <a href="/logout" class="logout-btn" title="Cerrar Sesión">
+                    <i class="fas fa-power-off"></i>
+                </a>
+            </div>
+          </div>
+        </header>
+        <!-- Start of page content -->

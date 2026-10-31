@@ -1,0 +1,44 @@
+﻿========================================================================
+  COMERCIAL AGRICOLA MARES CERVANTES - GUIA DE DESPLIEGUE EN LA NUBE
+========================================================================
+
+Este paquete contiene la aplicacion lista para desplegar en cualquier
+servidor en la nube (Docker, Render, Railway, VPS Ubuntu/Debian, AWS, etc.).
+
+------------------------------------------------------------------------
+OPCION 1: DESPLIEGUE CON DOCKER & DOCKER-COMPOSE (RECOMENDADO)
+------------------------------------------------------------------------
+1. Asegurate de tener Docker y Docker Compose instalados en el servidor.
+2. Si usas base de datos local incluida en el contenedor:
+   - Ejecuta: docker compose up -d --build
+   - El sistema estara activo en http://TU_IP_O_DOMINIO:3000
+
+3. Si usas MongoDB Atlas (Nube de MongoDB):
+   - Configura tu URI en el archivo .env:
+     MONGODB_URI=mongodb+srv://usuario:password@cluster0.xxxxx.mongodb.net/comercial_agricola_db?retryWrites=true&w=majority
+   - Ejecuta: docker compose -f docker-compose.atlas.yml up -d --build
+
+------------------------------------------------------------------------
+OPCION 2: DESPLIEGUE DIRECTO CON NODE.JS (VPS / RENDER / RAILWAY)
+------------------------------------------------------------------------
+1. Variables de entorno recomendadas:
+   PORT=3000
+   NODE_ENV=production
+   MONGODB_URI=mongodb+srv://... (Tu conexion a MongoDB Atlas)
+   JWT_SECRET=tu_clave_secreta_segura
+
+2. Comando de instalacion:
+   npm ci --omit=dev
+
+3. Comando de arranque:
+   npm start  (o node app.js)
+
+4. El frontend ya viene compilado en la carpeta frontend/dist y es servido
+   automaticamente por Express en el puerto 3000.
+
+------------------------------------------------------------------------
+CREDENCIALES INICIALES:
+------------------------------------------------------------------------
+- Usuario: admin
+- Password: admin123password
+========================================================================

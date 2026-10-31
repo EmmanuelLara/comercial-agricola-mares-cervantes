@@ -1,0 +1,20 @@
+﻿========================================================================
+  COMERCIAL AGRICOLA MARES CERVANTES - GUIA DE FACTURACION Y TIMBRADO SAT
+========================================================================
+
+El sistema cuenta con integracion directa para FACTURAPI (CFDI 4.0 oficial del SAT).
+
+COMO ACTIVAR EL TIMBRADO OFICIAL DEL SAT CON FACTURAPI:
+1. Registrate en https://www.facturapi.io (14 dias gratis de prueba).
+2. En el panel de Facturapi, ve a "Organizacion" y sube los Certificados CSD del SAT
+   (archivos .cer, .key y contrasena de tu RFC emisor).
+3. Copia tu clave API Secreta (Live Secret Key o Test Secret Key).
+4. Abre el archivo .env del sistema y pega tu clave:
+   FACTURAPI_KEY=sk_live_tu_clave_secreta_aqui
+
+5. Guarda el archivo .env y reinicia el sistema.
+   - Si la clave empieza con sk_test_ -> El sistema emite en Modo Pruebas de Facturapi.
+   - Si la clave empieza con sk_live_ -> El sistema emite Facturas OFICIALES timbradas ante el SAT.
+   - Si se deja vacio -> El sistema opera en Simulador Sandbox Local.
+
+========================================================================

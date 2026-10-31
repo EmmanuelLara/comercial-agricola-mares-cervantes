@@ -1,0 +1,197 @@
+<%- include('partials/header') %>
+
+<div class="dashboard fade-in">
+    <div class="header-actions">
+        <h1>Panel de Control</h1>
+        <div class="date-display badge secondary">
+            <i class="far fa-calendar-alt"></i> <%= new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+        </div>
+    </div>
+
+    <div class="stats-summary">
+        <div class="dashboard-stat-card">
+            <div class="icon" style="background: #ecfdf5; color: #10b981;"><i class="fas fa-boxes"></i></div>
+            <div class="details">
+                <h3>Total Productos</h3>
+                <p>--</p>
+                <small class="text-muted">En inventario</small>
+            </div>
+        </div>
+        <div class="dashboard-stat-card">
+            <div class="icon" style="background: #eff6ff; color: #3b82f6;"><i class="fas fa-shopping-cart"></i></div>
+            <div class="details">
+                <h3>Ventas del Mes</h3>
+                <p>--</p>
+                <small class="text-muted">Ventas registradas</small>
+            </div>
+        </div>
+        <div class="dashboard-stat-card">
+            <div class="icon" style="background: #fef2f2; color: #ef4444;"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="details">
+                <h3>Stock Bajo</h3>
+                <p>--</p>
+                <small class="text-muted">Requieren atención</small>
+            </div>
+        </div>
+        <div class="dashboard-stat-card">
+            <div class="icon" style="background: #fffbeb; color: #f59e0b;"><i class="fas fa-truck"></i></div>
+            <div class="details">
+                <h3>Proveedores</h3>
+                <p>--</p>
+                <small class="text-muted">Socios activos</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-container" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+        <div class="chart-box" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: var(--shadow); position: relative; min-height: 400px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 style="font-weight: 800; font-size: 1.2rem;">Rendimiento de Ventas</h3>
+                <select class="badge secondary" style="border: none; cursor: pointer; padding-right: 2rem;">
+                    <option>Últimos 7 días</option>
+                    <option>Último mes</option>
+                </select>
+            </div>
+            
+            <!-- Placeholder for Chart -->
+            <div style="height: 250px; display: flex; align-items: flex-end; justify-content: space-around; padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9;">
+                <div style="width: 40px; background: #d1fae5; height: 60%; border-radius: 8px 8px 0 0; position: relative;" title="Lun">
+                    <div style="width: 100%; height: 100%; position: absolute; bottom: 0; background: var(--primary); transform-origin: bottom; animation: barUp 1s ease-out; border-radius: 8px 8px 0 0;"></div>
+                </div>
+                <div style="width: 40px; background: #d1fae5; height: 45%; border-radius: 8px 8px 0 0; position: relative;" title="Mar">
+                    <div style="width: 100%; height: 100%; position: absolute; bottom: 0; background: var(--primary); transform-origin: bottom; animation: barUp 1.2s ease-out; border-radius: 8px 8px 0 0;"></div>
+                </div>
+                <div style="width: 40px; background: #d1fae5; height: 80%; border-radius: 8px 8px 0 0; position: relative;" title="Mie">
+                    <div style="width: 100%; height: 100%; position: absolute; bottom: 0; background: var(--primary); transform-origin: bottom; animation: barUp 1.4s ease-out; border-radius: 8px 8px 0 0;"></div>
+                </div>
+                <div style="width: 40px; background: #d1fae5; height: 35%; border-radius: 8px 8px 0 0; position: relative;" title="Jue">
+                    <div style="width: 100%; height: 100%; position: absolute; bottom: 0; background: var(--primary); transform-origin: bottom; animation: barUp 1.6s ease-out; border-radius: 8px 8px 0 0;"></div>
+                </div>
+                <div style="width: 40px; background: #d1fae5; height: 95%; border-radius: 8px 8px 0 0; position: relative;" title="Vie">
+                    <div style="width: 100%; height: 100%; position: absolute; bottom: 0; background: var(--primary); transform-origin: bottom; animation: barUp 1.8s ease-out; border-radius: 8px 8px 0 0;"></div>
+                </div>
+                <div style="width: 40px; background: #d1fae5; height: 75%; border-radius: 8px 8px 0 0; position: relative;" title="Sab">
+                    <div style="width: 100%; height: 100%; position: absolute; bottom: 0; background: var(--primary); transform-origin: bottom; animation: barUp 2s ease-out; border-radius: 8px 8px 0 0;"></div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-around; padding-top: 1rem; color: var(--text-muted); font-size: 0.8rem; font-weight: 700;">
+                <span>LUN</span><span>MAR</span><span>MIE</span><span>JUE</span><span>VIE</span><span>SAB</span>
+            </div>
+        </div>
+
+        <div class="chart-box" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: var(--shadow);">
+            <h3 style="font-weight: 800; font-size: 1.1rem; margin-bottom: 1.5rem;">Actividad Reciente</h3>
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #dcfce7; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div>
+                        <p style="font-size: 0.9rem; font-weight: 600;">Nuevo producto añadido</p>
+                        <small class="text-muted">Hace 15 min - Fertilizante Nitrogenado</small>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #dbeafe; color: #1e40af; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div>
+                        <p style="font-size: 0.9rem; font-weight: 600;">Venta registrada</p>
+                        <small class="text-muted">Hace 45 min - Folio #V-8821</small>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #fee2e2; color: #991b1b; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        <p style="font-size: 0.9rem; font-weight: 600;">Stock bajo detectado</p>
+                        <small class="text-muted">Hace 2 horas - Filtro de Aceite para Tractor</small>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn secondary" style="width: 100%; margin-top: 2rem; justify-content: center;">Ver todo el historial</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Dashboard Stats Specific */
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .dashboard-stat-card {
+        background: var(--white);
+        padding: 1.75rem;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .dashboard-stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .dashboard-stat-card .icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .dashboard-stat-card .details h3 {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        font-weight: 700;
+    }
+
+    .dashboard-stat-card .details p {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-main);
+        letter-spacing: -0.5px;
+    }
+
+    @keyframes barUp {
+        from { transform: scaleY(0); }
+        to { transform: scaleY(1); }
+    }
+    
+    .date-display {
+        font-family: inherit;
+        text-transform: capitalize;
+        padding: 0.5rem 1rem;
+    }
+
+    .chart-container-box {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        position: relative;
+        min-height: 400px;
+    }
+</style>
+
+<%- include('partials/footer') %>

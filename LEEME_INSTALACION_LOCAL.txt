@@ -1,0 +1,34 @@
+﻿========================================================================
+  COMERCIAL AGRICOLA MARES CERVANTES - GUIA DE ARRANQUE LOCAL
+========================================================================
+
+Este paquete contiene todo lo necesario para ejecutar el sistema
+en una nueva computadora o entregarlo al cliente.
+
+------------------------------------------------------------------------
+OPCION 1: ARRANQUE RAPIDO CON LA APLICACION DE ESCRITORIO (RECOMENDADO)
+------------------------------------------------------------------------
+1. Haz doble clic en "MaresApp.exe".
+2. La aplicacion iniciara automaticamente el servidor y la base de datos,
+   abriendo la ventana del sistema lista para usarse.
+
+------------------------------------------------------------------------
+OPCION 2: ARRANQUE CON EL LANZADOR "INICIAR.bat"
+------------------------------------------------------------------------
+1. Requisitos: Tener instalado Node.js (v18 o superior).
+2. Si es la primera vez en la computadora:
+   - Haz doble clic en "SETUP.bat" para comprobar dependencias.
+3. Para abrir el sistema diariamente:
+   - Haz doble clic en "INICIAR.bat".
+   - Se abrira la ventana en http://localhost:3000
+   - Tambien podras acceder desde celulares o tablets en la misma red Wi-Fi
+     usando la direccion IP mostrada en pantalla.
+4. Para cerrar el sistema:
+   - Haz doble clic en "DETENER_APP.bat".
+
+------------------------------------------------------------------------
+CREDENCIALES DE ACCESO:
+------------------------------------------------------------------------
+- Usuario: admin
+- Password: admin123password
+========================================================================

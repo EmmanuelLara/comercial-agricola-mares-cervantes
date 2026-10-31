@@ -1,0 +1,130 @@
+<%- include('partials/header') %>
+
+<div class="users-page fade-in">
+    <div class="header-actions">
+        <h1>Gestión de Usuarios</h1>
+        <% if (user.rol === 'Administrador') { %>
+            <button class="btn btn-primary" onclick="showModal()"><i class="fas fa-user-plus"></i> Nuevo Usuario</button>
+        <% } %>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Matrícula</th>
+                    <th>Nombre Completo</th>
+                    <th>Usuario</th>
+                    <th>Rol de Acceso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if(users && users.length > 0) { %>
+                    <% users.forEach(u => { %>
+                        <tr>
+                            <td><span class="badge secondary">#<%= u.Matricula_Usuario %></span></td>
+                            <td>
+                                <strong><%= u.Nombre_completo %></strong>
+                            </td>
+                            <td>
+                                <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; color: var(--primary-dark); font-weight: 600;">
+                                    <%= u.Usuario %>
+                                </code>
+                            </td>
+                            <td>
+                                <span class="badge <%= u.Rol === 'Jefe' ? 'success' : (u.Rol === 'Administrador' ? 'info' : 'primary') %>">
+                                    <i class="fas <%= u.Rol === 'Jefe' ? 'fa-crown' : (u.Rol === 'Administrador' ? 'fa-user-shield' : 'fa-user') %>"></i>
+                                    <%= u.Rol %>
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn-icon" title="Editar"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 4rem;">
+                            <div style="color: var(--text-muted);">
+                                <i class="fas fa-users-slash" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <p>No hay usuarios registrados</p>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal para Nuevo Usuario -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Añadir Nuevo Usuario</h2>
+            <button class="close-btn" onclick="hideModal()">&times;</button>
+        </div>
+        <form action="/users" method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Matrícula</label>
+                    <input type="text" name="Matricula_Usuario" required placeholder="Ex: 003">
+                </div>
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" name="Nombre_completo" required placeholder="Nombre y Apellidos">
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Usuario (Username)</label>
+                    <input type="text" name="Usuario" required placeholder="usuario123">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="Clave" required placeholder="••••••••">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Rol de Acceso</label>
+                <select name="Rol" required>
+                    <option value="Vendedor">Vendedor</option>
+                    <option value="Administrador">Administrador</option>
+                    <option value="Jefe">Jefe</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear Usuario</button>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+    .users-page {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+</style>
+
+<script>
+    function showModal() {
+        document.getElementById('userModal').style.display = 'flex';
+    }
+    function hideModal() {
+        document.getElementById('userModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('userModal')) hideModal();
+    }
+</script>
+
+<%- include('partials/footer') %>

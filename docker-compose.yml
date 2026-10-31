@@ -1,0 +1,37 @@
+﻿services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mares_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mares_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mares_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/comercial_agricola_db
+      - JWT_SECRET=ares_secret_key_2024
+      - NODE_ENV=production
+    depends_on:
+      - mongodb
+    networks:
+      - mares_network
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  mares_network:
+    driver: bridge
