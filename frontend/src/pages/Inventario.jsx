@@ -23,10 +23,36 @@ import {
   Droplets
 } from 'lucide-react';
 
+
+export const CATEGORIAS_PRODUCTO = [
+  'General',
+  'Retenes y Sellos',
+  'Filtros de Aceite',
+  'Filtros de Aire',
+  'Filtros Hidráulicos',
+  'Filtros de Combustible',
+  'Aceites y Lubricantes',
+  'Baleros y Rodamientos',
+  'Tornillería y Empaques',
+  'Motor y Transmisión',
+  'Otro'
+];
+
+export const MARCAS_TRACTOR = [
+  'Universal / Multimarca',
+  'John Deere',
+  'Massey Ferguson',
+  'Ford / New Holland',
+  'Case IH',
+  'Otro'
+];
+
 const EMPTY_FORM = {
   Codigo_Barras: '',
   Nombre: '',
   Descripcion: '',
+  Categoria: 'General',
+  Marca_Tractor: 'Universal / Multimarca',
   Ubicacion: '',
   Stock: 0,
   Stock_Minimo: 2,
@@ -350,6 +376,8 @@ const Inventory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('nombre-asc');
   const [filterReorderOnly, setFilterReorderOnly] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState('Todas');
+  const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [formData, setFormData] = useState(EMPTY_FORM);
 
   // ── Salida rápida de aceite / insumos ────────────────────────
@@ -484,6 +512,8 @@ const Inventory = () => {
       Codigo_Barras: product.Codigo_Barras || '',
       Nombre: product.Nombre || '',
       Descripcion: product.Descripcion || '',
+      Categoria: product.Categoria || 'General',
+      Marca_Tractor: product.Marca_Tractor || 'Universal / Multimarca',
       Ubicacion: product.Ubicacion || '',
       Stock: product.Stock || 0,
       Precio_Compra: product.Precio_Compra || '',
@@ -527,7 +557,19 @@ const Inventory = () => {
 
       if (filterReorderOnly) {
         const stockMin = p.Stock_Minimo !== undefined ? p.Stock_Minimo : 2;
-        return Number(p.Stock || 0) <= stockMin;
+        if (Number(p.Stock || 0) > stockMin) return false;
+      }
+
+      if (selectedBrand !== 'Todas') {
+        const pBrand = (p.Marca_Tractor || 'Universal').toLowerCase();
+        const sBrand = selectedBrand.toLowerCase();
+        if (!pBrand.includes(sBrand) && !sBrand.includes(pBrand)) return false;
+      }
+
+      if (selectedCategory !== 'Todas') {
+        const pCat = (p.Categoria || 'General').toLowerCase();
+        const sCat = selectedCategory.toLowerCase();
+        if (!pCat.includes(sCat) && !sCat.includes(pCat)) return false;
       }
 
       return true;
@@ -556,6 +598,8 @@ const Inventory = () => {
       { key: 'Numero', label: 'ID Sistema' },
       { key: 'Codigo_Barras', label: 'Cód. Barras' },
       { key: 'Nombre', label: 'Nombre de Refacción' },
+      { key: 'Categoria', label: 'Categoría' },
+      { key: 'Marca_Tractor', label: 'Marca Tractor' },
       { key: 'Ubicacion', label: 'Estantería / Ubicación' },
       { key: 'Descripcion', label: 'Descripción' },
       { key: 'Stock', label: 'Stock Actual' },
@@ -628,6 +672,84 @@ const Inventory = () => {
               <Plus size={18} /> Nueva Refacción
             </button>
           )}
+        </div>
+      </div>
+
+      
+      {/* ── BARRA 1: FILTROS RÁPIDOS POR MARCA DE TRACTOR ── */}
+      <div style={{ background: '#f8fafc', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '0.8rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            🚜 Tractor:
+          </span>
+          {[
+            { id: 'Todas', label: 'Todas las Marcas' },
+            { id: 'John Deere', label: '🚜 John Deere' },
+            { id: 'Massey Ferguson', label: '🚜 Massey Ferguson' },
+            { id: 'Ford / New Holland', label: '🚜 Ford / New Holland' },
+            { id: 'Case IH', label: '🚜 Case IH' },
+            { id: 'Universal', label: '🌐 Universal / Multimarca' }
+          ].map(b => (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => setSelectedBrand(b.id)}
+              style={{
+                padding: '4px 12px',
+                borderRadius: '20px',
+                border: '1px solid',
+                borderColor: selectedBrand === b.id ? '#16a34a' : '#cbd5e1',
+                background: selectedBrand === b.id ? '#dcfce7' : '#ffffff',
+                color: selectedBrand === b.id ? '#15803d' : '#475569',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                transition: 'all 0.15s'
+              }}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── BARRA 2: FILTROS RÁPIDOS POR CATEGORÍA / TIPO DE PIEZA ── */}
+      <div style={{ background: '#ffffff', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '1.2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            🏷️ Tipo / Pieza:
+          </span>
+          {[
+            { id: 'Todas', label: 'Todos los tipos' },
+            { id: 'Retenes', label: '⭕ Retenes y Sellos' },
+            { id: 'Filtros de Aceite', label: '🛢️ Filtros Aceite' },
+            { id: 'Filtros de Aire', label: '💨 Filtros Aire' },
+            { id: 'Filtros Hidráulicos', label: '💧 Filtros Hidráulicos' },
+            { id: 'Filtros de Combustible', label: '⛽ Filtros Diésel' },
+            { id: 'Aceites', label: '🛢️ Aceites / Lubricantes' },
+            { id: 'Baleros', label: '⚙️ Baleros / Rodamientos' },
+            { id: 'Tornillería', label: '🔩 Tornillos y Empaques' }
+          ].map(c => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setSelectedCategory(c.id)}
+              style={{
+                padding: '4px 12px',
+                borderRadius: '20px',
+                border: '1px solid',
+                borderColor: selectedCategory === c.id ? '#d97706' : '#cbd5e1',
+                background: selectedCategory === c.id ? '#fef3c7' : '#ffffff',
+                color: selectedCategory === c.id ? '#b45309' : '#475569',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                transition: 'all 0.15s'
+              }}
+            >
+              {c.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -790,7 +912,21 @@ const Inventory = () => {
                 return (
                   <tr key={product._id}>
                     <td><span className="badge secondary">#{product.Numero}</span></td>
-                    <td><strong>{product.Nombre}</strong></td>
+                    <td>
+                      <div><strong>{product.Nombre}</strong></div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '3px', flexWrap: 'wrap' }}>
+                        {product.Marca_Tractor && product.Marca_Tractor !== 'Universal / Multimarca' && (
+                          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: '#dcfce7', color: '#15803d', fontWeight: 700, border: '1px solid #bbf7d0' }}>
+                            🚜 {product.Marca_Tractor}
+                          </span>
+                        )}
+                        {product.Categoria && product.Categoria !== 'General' && (
+                          <span style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', background: '#fef3c7', color: '#b45309', fontWeight: 700, border: '1px solid #fde68a' }}>
+                            🏷️ {product.Categoria}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       {product.Codigo_Barras ? (
                         <span className="badge secondary" style={{ fontFamily: 'monospace' }}>
@@ -950,14 +1086,41 @@ const Inventory = () => {
               </div>
 
               <div className="form-group">
-                <label>Descripción</label>
+                <label>Descripción / Medidas (Ej: 35x52x8 mm)</label>
                 <textarea 
                   name="Descripcion" 
                   rows="2" 
-                  placeholder="Detalles del producto..."
+                  placeholder="Detalles, medidas o aplicaciones..."
                   value={formData.Descripcion}
                   onChange={handleInputChange}
                 ></textarea>
+              </div>
+
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Categoría / Tipo de Pieza</label>
+                  <select
+                    name="Categoria"
+                    value={formData.Categoria || 'General'}
+                    onChange={handleInputChange}
+                  >
+                    {CATEGORIAS_PRODUCTO.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Marca de Tractor / Maquinaria</label>
+                  <select
+                    name="Marca_Tractor"
+                    value={formData.Marca_Tractor || 'Universal / Multimarca'}
+                    onChange={handleInputChange}
+                  >
+                    {MARCAS_TRACTOR.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="form-grid">

@@ -377,6 +377,14 @@ router.post('/bulk', auth(), async (req, res) => {
                 'ESTANTERÍA / UB', 'ESTANTERIA / UB', 'ESTANTERÍA / UB.', 'ESTANTERIA / UB.', 'ESTANTERÍA / UBIC.', 'ESTANTERIA / UBIC.', 'ESTANTERÍA / UBICAC.', 'ESTANTERÍA / UBICACIÓN', 'ESTANTERIA / UBICACION', 'Estantería / Ubicación', 'Ubicacion', 'UBICACION', 'Ubicación', 'UBICACIÓN', 'Ubicacion_Estanteria', 'ESTANTE', 'Estanteria', 'Estantería'
             ], 'ubicacion') || 'SIN ESTANTE';
 
+            const categoria = getFieldValue(item, [
+                'CATEGORIA', 'CATEGORÍA', 'Categoria', 'Categoría', 'TIPO', 'Tipo', 'FAMILIA', 'Familia', 'LINEA', 'Linea'
+            ], 'categoria') || 'General';
+
+            const marcaTractor = getFieldValue(item, [
+                'MARCA TRACTOR', 'MARCA_TRACTOR', 'Marca Tractor', 'MARCA', 'Marca', 'APLICACION', 'APLICACIÓN', 'Aplicacion', 'Aplicación', 'TRACTOR', 'Tractor', 'EQUIPO', 'Equipo'
+            ], 'marca_tractor') || 'Universal';
+
             const estado = getFieldValue(item, [
                 'ESTADO', 'Estado'
             ], 'estado') || 'Activo';
@@ -404,6 +412,8 @@ router.post('/bulk', auth(), async (req, res) => {
                 if (precioCompra > 0) setDoc.Precio_Compra = precioCompra;
                 if (precioVenta > 0) setDoc.Precio_venta = precioVenta;
                 if (ubicacion && ubicacion !== 'SIN ESTANTE') setDoc.Ubicacion = ubicacion;
+                if (categoria && categoria !== 'General') setDoc.Categoria = categoria;
+                if (marcaTractor && marcaTractor !== 'Universal') setDoc.Marca_Tractor = marcaTractor;
                 if (estado) setDoc.Estado = estado;
 
                 if (Object.keys(setDoc).length > 0) updateDoc.$set = setDoc;
@@ -430,6 +440,8 @@ router.post('/bulk', auth(), async (req, res) => {
                             Codigo_Barras: codigoBarras,
                             Nombre: cleanNombre,
                             Descripcion: descripcion,
+                            Categoria: categoria,
+                            Marca_Tractor: marcaTractor,
                             Stock: stock,
                             Stock_Minimo: stockMinimo,
                             Precio_Compra: precioCompra,
