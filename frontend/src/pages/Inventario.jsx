@@ -349,6 +349,7 @@ const Inventory = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('nombre-asc');
+  const [filterReorderOnly, setFilterReorderOnly] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM);
 
   // ── Salida rápida de aceite / insumos ────────────────────────
@@ -450,7 +451,7 @@ const Inventory = () => {
   const fetchProducts = async () => {
     try {
       const response = await api.get('/inventory');
-      setProducts(response.data);
+      setProducts(Array.isArray(response.data) ? response.data : (response.data?.productos || []));
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
